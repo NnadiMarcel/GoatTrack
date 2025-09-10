@@ -49,6 +49,19 @@ dev_dependencies:
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 
+  # i Added this new line for launcher icons
+  flutter_launcher_icons: ^0.13.1
+
+# i added: This is the new config block for your logo
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/appLogo.png"
+
+  # i Added this so your icon.png is recognized as an asset
+  assets:
+    - assets/appLogo.png
+
 # The following section is specific to Flutter packages.
 flutter:
 
