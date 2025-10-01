@@ -1,36 +1,71 @@
-// Import Flutter's core material design package
+// Import Flutter core material design package
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
-// Import the separate page files (screens) for navigation
+// Import the separate page files (screens)
 import 'pages/dashboard_page.dart';
 import 'pages/goat_records_page.dart';
 import 'pages/sales_expenses_page.dart';
 import 'pages/reports_page.dart';
 import 'pages/NotificationsPage.dart';
+// import 'pages/profile_page.dart';
+// import 'pages/settings_page.dart';
+// import 'pages/subscriptions_page.dart';
+// import 'pages/support_page.dart';
 
-// The entry point of the app
 void main() {
-  runApp(const GoatFarmApp()); // Runs the app and loads GoatFarmApp widget
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ Set system UI (status bar + navigation bar)
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.grey,
+    systemNavigationBarIconBrightness: Brightness.dark,
+  ));
+
+  runApp(const GoatFarmApp());
 }
 
-// Root widget of the app
+// Root widget
 class GoatFarmApp extends StatelessWidget {
   const GoatFarmApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false, // Removes the debug banner
-      title: 'GoatTrack', // App title
+      debugShowCheckedModeBanner: false,
+      title: 'GoatTrack',
       theme: ThemeData(
-        primarySwatch: Colors.green, // Main theme color
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
+        useMaterial3: true,
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+          ),
+        ),
       ),
-      home: const MainPage(), // First page loaded when app starts
+      builder: (context, child) {
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: const SystemUiOverlayStyle(
+            systemNavigationBarColor: Colors.grey,
+            systemNavigationBarIconBrightness: Brightness.dark,
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.light,
+          ),
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
+      home: const MainPage(),
     );
   }
 }
 
-// The main page containing bottom navigation
+// Main page with bottom navigation + drawer
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
@@ -38,11 +73,10 @@ class MainPage extends StatefulWidget {
   State<MainPage> createState() => _MainPageState();
 }
 
-// State class for MainPage (manages changes in selected page)
 class _MainPageState extends State<MainPage> {
-  int _selectedIndex = 0; // Keeps track of which tab is active
+  int _selectedIndex = 0;
 
-  // List of pages that can be displayed
+  // ✅ Pages list
   final List<Widget> _pages = [
     const DashboardPage(),
     const GoatRecordsPage(),
@@ -50,10 +84,17 @@ class _MainPageState extends State<MainPage> {
     const ReportsPage(),
   ];
 
-  // Function to update selected tab index
+  // ✅ Titles for dynamic AppBar
+  final List<String> _titles = [
+    "Dashboard",
+    "Goat Records",
+    "Sales & Expenses",
+    "Reports",
+  ];
+
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index; // Updates the active page
+      _selectedIndex = index;
     });
   }
 
@@ -61,16 +102,15 @@ class _MainPageState extends State<MainPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("GoatTrack"), // Title on top
-        centerTitle: true, // Centers the title text
+        title: Text(_titles[_selectedIndex]),
+        centerTitle: true,
       ),
 
-      // ✅ Navigation Drawer Added
+      // ✅ Navigation Drawer
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            // Drawer Header
             UserAccountsDrawerHeader(
               accountName: const Text("Goat Farm"),
               accountEmail: const Text("goatfarm@email.com"),
@@ -78,78 +118,60 @@ class _MainPageState extends State<MainPage> {
                 backgroundColor: Colors.white,
                 child: Image.asset("assets/images/goat.png", height: 40),
               ),
-              decoration: BoxDecoration(
-                color: Colors.green[700],
-              ),
+              decoration: const BoxDecoration(color: Colors.green),
             ),
 
-            // 👤 User Profile
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text("User Profile"),
               onTap: () {
-                // TODO: Navigate to Profile Page
                 Navigator.pop(context);
+                // Navigator.push(context, MaterialPageRoute(builder: (_) => const ProfilePage()));
               },
             ),
-
-            // ⚙️ Settings
             ListTile(
               leading: const Icon(Icons.settings),
               title: const Text("Settings"),
               onTap: () {
-                // TODO: Navigate to Settings Page
                 Navigator.pop(context);
+                // Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsPage()));
               },
             ),
-
-            // 🔔 Notifications / Alerts
             ListTile(
               leading: const Icon(Icons.notifications),
               title: const Text("Notifications"),
               onTap: () {
-                // TODO: Navigate to Notifications Page
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationsPage(), // ✅ Opens Notifications Page
-                  ),
+                  MaterialPageRoute(builder: (context) => const NotificationsPage()),
                 );
               },
             ),
-
-            // 💳 Subscriptions / Membership
             ListTile(
               leading: const Icon(Icons.workspace_premium),
               title: const Text("Subscriptions"),
               onTap: () {
-                // TODO: Navigate to Subscription Page
                 Navigator.pop(context);
+                // Navigator.push(context, MaterialPageRoute(builder: (_) => const SubscriptionsPage()));
               },
             ),
-
-            // 📤 Export / Backup Data
             ListTile(
               leading: const Icon(Icons.backup),
               title: const Text("Export / Backup Data"),
               onTap: () {
-                // TODO: Trigger data export / backup
                 Navigator.pop(context);
+                // TODO: Add backup logic
               },
             ),
-
-            // 📞 Contact Support
             ListTile(
               leading: const Icon(Icons.support_agent),
               title: const Text("Contact Support"),
               onTap: () {
-                // TODO: Open support page or email/WhatsApp
                 Navigator.pop(context);
+                // Navigator.push(context, MaterialPageRoute(builder: (_) => const SupportPage()));
               },
             ),
-
-            // ℹ️ About/Help
             ListTile(
               leading: const Icon(Icons.info),
               title: const Text("About / Help"),
@@ -157,36 +179,31 @@ class _MainPageState extends State<MainPage> {
                 Navigator.pop(context);
               },
             ),
-
             const Divider(),
-
-            // 🚪 Logout
             ListTile(
               leading: const Icon(Icons.logout, color: Colors.red),
               title: const Text("Logout"),
               onTap: () {
-                // TODO: Handle logout logic
                 Navigator.pop(context);
+                // TODO: Add logout logic
               },
             ),
           ],
         ),
       ),
 
-
-      body: _pages[_selectedIndex], // Display the selected page
+      body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed, // Ensures all items are shown
+        type: BottomNavigationBarType.fixed,
         items: const [
-          // Navigation items (with icons and labels)
           BottomNavigationBarItem(icon: Icon(Icons.dashboard), label: "Dashboard"),
           BottomNavigationBarItem(icon: Icon(Icons.list_alt), label: "Records"),
           BottomNavigationBarItem(icon: Icon(Icons.attach_money), label: "Sales/Expenses"),
           BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Reports"),
         ],
-        currentIndex: _selectedIndex, // Highlights the active tab
-        selectedItemColor: Colors.green, // Active tab color
-        onTap: _onItemTapped, // Handles tab click
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.green,
+        onTap: _onItemTapped,
       ),
     );
   }

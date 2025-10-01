@@ -8,7 +8,7 @@ class ReportsPage extends StatelessWidget {
     return const Scaffold(
       body: Center(
         child: Text(
-          "Reports Page",
+          "ReportsPage",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),

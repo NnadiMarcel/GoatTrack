@@ -1,24 +1,45 @@
 import 'package:flutter/material.dart';
-import 'goat_records_page.dart'; // import the records page
 import 'NotificationsPage.dart';
 
-// Dashboard page widget
-class DashboardPage extends StatelessWidget {
+class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
+
+  @override
+  State<DashboardPage> createState() => _DashboardPageState();
+}
+
+class _DashboardPageState extends State<DashboardPage> {
+  String _selectedFilter = "Current Month"; // Default filter
+
+  // ✅ Backend-ready variables (replace these with database values later)
+  int totalGoats = 0;
+  int totalKids = 0;
+  double totalSales = 0.0;
+  double totalProfit = 0.0;
+  int pregnantGoats = 0;
+  double totalExpenses = 0.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // App bar (top bar of the screen)
       appBar: AppBar(
-        title: const Text("Overview"), // Title displayed on the app bar
-        backgroundColor: Colors.green[700], // Custom background color
+        title: const Text(
+          "Overview",
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        ),
+        backgroundColor: Colors.green[700],
         actions: [
-          // 🔔 Notification Bell
+          // Filter Icon
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.filter_list, color: Colors.white),
             onPressed: () {
-              // 👉 Navigate to notifications page
+              _showFilterOptions(context);
+            },
+          ),
+          // Notification Bell
+          IconButton(
+            icon: const Icon(Icons.notifications, color: Colors.white),
+            onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -30,74 +51,126 @@ class DashboardPage extends StatelessWidget {
         ],
       ),
 
-      // SafeArea ensures content doesn't overlap with system UI (notch, status bar)
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0), // Add spacing around the grid
+          padding: const EdgeInsets.all(16.0),
           child: GridView.count(
-            crossAxisCount: 2, // Number of columns in the grid
-            crossAxisSpacing: 16, // Horizontal spacing between cards
-            mainAxisSpacing: 16, // Vertical spacing between cards
-            shrinkWrap: true, // Prevents overflow issues
+            crossAxisCount: 2,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
+            shrinkWrap: true,
             children: [
-              // Dashboard cards (Goats, Sales, Expenses, Profit, Kids)
-              _buildDashboardCardWithImage("Goats", "0", "assets/images/goat.png", Colors.brown),
-              _buildDashboardCardWithImage("Sales", "\$0", "assets/images/sales_box.png", Colors.blue),
-              _buildDashboardCardWithImage("Expenses", "\$0", "assets/images/expenses_icon.png", Colors.red),
-              _buildDashboardCardWithImage("Profit", "\$0", "assets/images/profit_icon.png", Colors.green),
-              _buildDashboardCardWithImage("Kids", "0", "assets/images/goat_kid.png", Colors.brown),
+              _buildDashboardCardWithImage(
+                  "Goats", "$totalGoats", "assets/images/goat.png", Colors.brown),
+              _buildDashboardCardWithImage(
+                  "Kids", "$totalKids", "assets/images/goat_kid.png", Colors.brown),
+              _buildDashboardCardWithImage(
+                  "Sales", "\$${totalSales.toStringAsFixed(2)}",
+                  "assets/images/sales_box.png", Colors.brown),
+              _buildDashboardCardWithImage(
+                  "Profit", "\$${totalProfit.toStringAsFixed(2)}",
+                  "assets/images/profit_icon.png", Colors.brown),
+              _buildDashboardCardWithImage(
+                  "Pregnant Goats", "$pregnantGoats",
+                  "assets/images/pregnant_goat.png", Colors.brown),
+              _buildDashboardCardWithImage(
+                  "Expenses", "\$${totalExpenses.toStringAsFixed(2)}",
+                  "assets/images/expenses_icon.png", Colors.brown),
             ],
           ),
         ),
       ),
-
-      // ✅ Floating Action Button to add goat record
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.green[700],
-        child: const Icon(Icons.add),
-        onPressed: () {
-          // navigate to goat records page
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const GoatRecordsPage()),
-          );
-        },
-      ),
     );
   }
 
-  // ✅ Reusable method to build a card with an IMAGE (instead of an icon)
+  // Filter Options with checkmark
+  void _showFilterOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: [
+            _buildFilterTile("Last 7 Days"),
+            _buildFilterTile("Current Month"),
+            _buildFilterTile("Last 3 Months"),
+            _buildFilterTile("Last 6 Months"),
+            _buildFilterTile("Current Year"),
+            _buildFilterTile("Previous Year"),
+            _buildFilterTile("Custom Range"),
+          ],
+        );
+      },
+    );
+  }
+
+  // Reusable filter option with highlight
+  Widget _buildFilterTile(String option) {
+    return ListTile(
+      title: Text(option),
+      trailing: _selectedFilter == option
+          ? const Icon(Icons.check, color: Colors.green)
+          : null,
+      onTap: () async {
+        if (option == "Custom Range") {
+          Navigator.pop(context); // Close bottom sheet before opening picker
+          final picked = await showDateRangePicker(
+            context: context,
+            firstDate: DateTime(2000),
+            lastDate: DateTime.now().add(const Duration(days: 365)), // allow future dates
+            initialDateRange: DateTimeRange(
+              start: DateTime.now().subtract(const Duration(days: 7)),
+              end: DateTime.now(),
+            ),
+          );
+
+          if (picked != null) {
+            setState(() {
+              _selectedFilter =
+              "Custom Range: ${picked.start.toString().split(' ')[0]} - ${picked.end.toString().split(' ')[0]}";
+            });
+          }
+        } else {
+          setState(() {
+            _selectedFilter = option;
+          });
+          Navigator.pop(context);
+        }
+      },
+    );
+  }
+
+  // Dashboard card widget
   Widget _buildDashboardCardWithImage(
-      String title, String value, String imagesPath, Color color) {
+      String title, String value, String imagePath, Color color) {
     return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)), // Rounded corners
-      elevation: 4, // Shadow depth
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 4,
       child: Padding(
-        padding: const EdgeInsets.all(16.0), // Inner spacing
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center, // Center items vertically
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Flexible(
               child: Image.asset(
-                imagesPath,
+                imagePath,
                 height: 50,
                 width: 50,
-                fit: BoxFit.contain, // Keeps aspect ratio inside the card
-                color: color, // custom color
+                fit: BoxFit.contain,
+                color: color,
                 colorBlendMode: BlendMode.srcIn,
               ),
             ),
-            const SizedBox(height: 10), // Space between image and value
+            const SizedBox(height: 10),
             Text(
-              value, // The main value (e.g., 0 goats)
+              value,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 5), // Space between value and title
+            const SizedBox(height: 5),
             Text(
-              title, // The label (e.g., Goats)
+              title,
               style: const TextStyle(fontSize: 16, color: Colors.black54),
             ),
           ],

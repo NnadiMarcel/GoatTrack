@@ -1,8 +1,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Permissions for camera & image picking -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <!-- Newer Android 13+ uses this; keep both for compatibility -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <!-- WRITE_EXTERNAL_STORAGE is deprecated on modern Android versions,
+         only include it if you specifically need legacy write access -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
     <application
         android:label="GoatTrack"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        android:requestLegacyExternalStorage="true"> <!-- optional for Android 10 compatibility -->
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
